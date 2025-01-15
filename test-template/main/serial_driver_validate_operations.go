@@ -97,22 +97,20 @@ var kvModel = porcupine.Model{
 	},
 }
 
-func Validate(filepath string, viz bool) {
-	fmt.Println("antithesis-porcupine: starting Validate()")
-	assert.Sometimes(true, "antithesis-porcupine: starting Validate()", nil)
+func OrganizeOperations(filepath string) [][]porcupine.Operation {
+	fmt.Println("Client [serial_driver_validate]: opening operations log file")
 
-	fmt.Println("antithesis-porcupine: opening operations log file")
 	file, err := os.Open(filepath)
 	if err != nil {
-		fmt.Printf("antithesis-porcupine: error reading operations log file, can't validate test \n")
-		assert.Unreachable("error reading operations log file", nil)
-		return
+		fmt.Printf("Client [serial_driver_validate]: error reading operations log file, can't validate test \n")
+		assert.Unreachable("Error reading operations log file", nil)
+		return nil
 	}
 	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
 	operations := []porcupine.Operation{}
-	failed_ops := []porcupine.Operation{}
+	failed_operations := []porcupine.Operation{}
 
 	for scanner.Scan() {
 		// {id},{op},{start},{end},{key},{value},{response},{success},{revision}
@@ -150,7 +148,7 @@ func Validate(filepath string, viz bool) {
 		if vals[7] == "False" {
 			// add to failed_ops to go through later
 			fmt.Printf("Failed operation: ")
-			failed_ops = append(failed_ops, op)
+			failed_operations = append(failed_operations, op)
 		} else {
 			operations = append(operations, op)
 		}
@@ -159,70 +157,84 @@ func Validate(filepath string, viz bool) {
 	}
 
 	// first test the successful operations to see if they are linearizable
-	fmt.Printf("antithesis-porcupine: number of successful operations found: %v \n", len(operations))
+	fmt.Printf("Client [serial_driver_validate]: number of successful operations found: %v \n", len(operations))
 	if len(operations) == 0 {
-		fmt.Printf("antithesis-porcupine: no successful operations, can't validate\n")
+		fmt.Printf("Client [serial_driver_validate]: no successful operations, can't validate\n")
+		return nil
+	}
+
+	return [][]porcupine.Operation{operations, failed_operations}
+}
+
+func Visualize(all_operations [][]porcupine.Operation) {
+	// this only creates a visualization for the successful operations
+
+	successful_operations, _ := all_operations[0], all_operations[1]
+
+	// TODO add visualization for failed operations too? Note: _ is a bool response for linearizability
+	_, info := porcupine.CheckOperationsVerbose(kvModel, successful_operations, 0)
+
+	file, err := os.CreateTemp("resources", "*.html")
+	if err != nil {
+		fmt.Printf("failed to create temp file\n")
 		return
 	}
 
-	if !viz {
-		result := porcupine.CheckOperations(kvModel, operations)
-		if result == true {
-			// the model is linearizable, no need to check failed ops
-			fmt.Printf("antithesis-porcupine: validate result %v \n", result)
-			assert.Always(true, "Operations against the cluster are linearizable", nil)
-			return
-		}
-
-		// now create all combinations of failed operations and go through them to check for linearizability
-		// once we have found a case that works, return true
-		// if no cases are linearizable, return false
-
-		fmt.Printf("antithesis-porcupine: %v failed operations to check\n", len(failed_ops))
-
-		if len(failed_ops) > 19 {
-			fmt.Printf("antithesis-porcupine: too many failed operations. total combinations of this number could exceed memory limits")
-			assert.Reachable("Memory limit could be hit if validating combinations of failed operations", map[string]interface{}{"number_failed_ops": len(failed_ops)})
-			return
-		}
-
-		failed_op_combos := combinations.All(failed_ops)
-		fmt.Printf("antithesis-porcupine: %v total combinations to check\n", len(failed_op_combos))
-
-		for _, ops := range failed_op_combos {
-			fmt.Printf("adding %v failed ops in this round \n", len(ops))
-			ops_to_check := append(operations, ops...)
-			res := porcupine.CheckOperations(kvModel, ops_to_check)
-			if res {
-				fmt.Printf("antithesis-porcupine: validate result true.\n")
-				assert.Always(true, "Operations against the cluster are linearizable", nil)
-				fmt.Printf("antithesis-porcupine: failed ops that were used for true result - %v.\n", ops)
-				return
-			}
-		}
-
-		// ∄ a linearizable subset → linearizability violation somewhere
-		fmt.Printf("antithesis-porcupine: validate result false.\n")
-		assert.Always(false, "Operations against the cluster are linearizable", nil)
+	err = porcupine.Visualize(kvModel, info, file)
+	if err != nil {
+		fmt.Printf("visualization failed\n")
 		return
-	} else {
-		// this only creates a visualization for the successful operations
-		// TODO add visualization for failed operations too? Note: _ is a bool response for linearizability
-		_, info := porcupine.CheckOperationsVerbose(kvModel, operations, 0)
-		file, err := os.CreateTemp("resources", "*.html")
-		if err != nil {
-			fmt.Printf("failed to create temp file\n")
-		}
-		err = porcupine.Visualize(kvModel, info, file)
-		if err != nil {
-			fmt.Printf("visualization failed\n")
-		}
-		fmt.Printf("wrote visualization to %s\n", file.Name())
 	}
+
+	fmt.Printf("wrote visualization to %s\n", file.Name())
+}
+
+func Validate(all_operations [][]porcupine.Operation) (bool, error) {
+	fmt.Println("Client [serial_driver_validate]: starting Validate()")
+	assert.Sometimes(true, "Starting validation of operations", nil)
+
+	successful_operations, failed_operations := all_operations[0], all_operations[1]
+
+	result := porcupine.CheckOperations(kvModel, successful_operations)
+	if result == true {
+		// the model is linearizable, no need to check failed ops
+		fmt.Printf("Client [serial_driver_validate]: validate result %v \n", result)
+		return true, nil
+	}
+
+	// now create all combinations of failed operations and go through them to check for linearizability
+	// once we have found a case that works, return true
+	// if no cases are linearizable, return false
+
+	fmt.Printf("Client [serial_driver_validate]: %v failed operations to check\n", len(failed_operations))
+
+	if len(failed_operations) > 19 {
+		fmt.Printf("Client [serial_driver_validate]: too many failed operations. total combinations of this number could exceed memory limits")
+		assert.Reachable("Memory limit could be hit if validating combinations of failed operations", map[string]interface{}{"number_failed_ops": len(failed_operations)})
+		return false, fmt.Errorf("Memory limit could be hit")
+	}
+
+	failed_op_combos := combinations.All(failed_operations)
+	fmt.Printf("Client [serial_driver_validate]: %v total combinations to check\n", len(failed_op_combos))
+
+	for _, ops := range failed_op_combos {
+		fmt.Printf("adding %v failed ops in this round \n", len(ops))
+		ops_to_check := append(successful_operations, ops...)
+		res := porcupine.CheckOperations(kvModel, ops_to_check)
+		if res {
+			fmt.Printf("Client [serial_driver_validate]: validate result true.\n")
+			fmt.Printf("Client [serial_driver_validate]: failed ops that were used for true result - %v.\n", ops)
+			return true, nil
+		}
+	}
+
+	// ∄ a linearizable subset → linearizability violation somewhere
+	fmt.Printf("Client [serial_driver_validate]: validate result false.\n")
+	return false, nil
 }
 
 func main() {
-	fmt.Println("antithesis-porcupine: entered validate/main()")
+	fmt.Println("Client [serial_driver_validate]: entered validate/main()")
 
 	op_log := "/opt/antithesis/local-txt-files/operations.txt"
 	create_viz := false
@@ -232,8 +244,22 @@ func main() {
 		create_viz = true
 	}
 
-	Validate(op_log, create_viz)
+	all_operations := OrganizeOperations(op_log)
 
-	fmt.Println("antithesis-porcupine: validation complete done")
+	if all_operations == nil {
+		return
+	}
+
+	if !create_viz {
+		result, err := Validate(all_operations)
+		if err != nil {
+			return
+		}
+		assert.Always(result == true, "Operations against the cluster are linearizable", nil)
+	} else {
+		Visualize(all_operations)
+	}
+
+	fmt.Println("Client [serial_driver_validate]: validation complete done")
 	assert.Reachable("completion of a validation script", nil)
 }

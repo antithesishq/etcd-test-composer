@@ -42,7 +42,7 @@ def generate_random_value():
 
 def format_operation(traffic_id, request_type, start, end, key, value=None, response=None, success=True, revision=None):
     operation = f"{traffic_id},{request_type},{start},{end},{key},{value},{response},{success},{revision}"
-    print(f"Workload [parallel_driver_generate_traffic.py] ({traffic_id}): operation recorded: {operation}")
+    print(f"Client [parallel_driver_generate_traffic] ({traffic_id}): operation recorded: {operation}")
     return operation
 
 
@@ -56,7 +56,7 @@ def execute_requests(client, traffic_id, requests):
             value = generate_random_value()
             success, start, end, response, error = request.put_request(client, key, value)
 
-            sometimes(success,"client can make successful put requests", None)
+            sometimes(success,"Client can make successful put requests", None)
 
             if success:
                 revision = response.header.revision
@@ -66,14 +66,14 @@ def execute_requests(client, traffic_id, requests):
             else:
                 operation = format_operation(traffic_id, request_type, start, end, key, value, success=False)
                 operations.append(operation)
-                print(f"Workload [parallel_driver_generate_traffic.py] ({traffic_id}): unknown response for a {request_type} with key '{key}' and value '{value}' with error '{error}' and end timeout '{end}'")
+                print(f"Client [parallel_driver_generate_traffic] ({traffic_id}): unknown response for a {request_type} with key '{key}' and value '{value}' with error '{error}' and end timeout '{end}'")
 
         elif request_type == "get":
 
             key = random_choice(KEYS)
             success, start, end, response, error = request.get_request(client, key)
             
-            sometimes(success,"client can make successful get requests", None)
+            sometimes(success,"Client can make successful get requests", None)
 
             if success:
                 value = response[0].decode('utf-8') if response[0] else None
@@ -85,15 +85,15 @@ def execute_requests(client, traffic_id, requests):
                 operation = format_operation(traffic_id, request_type, start, end, key, response=value, revision=revision_str)
                 operations.append(operation)
             else:
-                print(f"Workload [parallel_driver_generate_traffic.py] ({traffic_id}): failed to do a client get for key '{key}' with error '{error}'")
+                print(f"Client [parallel_driver_generate_traffic] ({traffic_id}): failed to do a client get for key '{key}' with error '{error}'")
 
         else:
             unreachable("unknown request type", {"traffic_id":traffic_id, "request_type":request_type})
-            print(f"Workload [parallel_driver_generate_traffic.py] ({traffic_id}): unknown request name. this should never happen")
+            print(f"Client [parallel_driver_generate_traffic] ({traffic_id}): unknown request name. this should never happen")
     
     local_file_helper.write_operations(operations)
-    reachable("completion of a traffic execution script", None)
-    print(f"Workload [parallel_driver_generate_traffic.py] ({traffic_id}): traffic script completed")
+    reachable("Completion of a traffic execution script", None)
+    print(f"Client [parallel_driver_generate_traffic] ({traffic_id}): traffic script completed")
 
 
 def simulate_traffic():
@@ -102,12 +102,12 @@ def simulate_traffic():
     try:
         host = random_choice(HOSTS)
         client = etcd3.client(host=host, port=2379)
-        reachable("client connects to an etcd host", None)
-        print(f"Workload [parallel_driver_generate_traffic.py] ({traffic_id}): connected to {host}")
+        reachable("Client connects to an etcd host", None)
+        print(f"Client [parallel_driver_generate_traffic] ({traffic_id}): connected to {host}")
         execute_requests(client, traffic_id, requests)
     except Exception as e:
-        unreachable("client fails to connects to an etcd host", {"traffic_id":traffic_id, "host":host, "error":e})
-        print(f"Workload [parallel_driver_generate_traffic.py] ({traffic_id}): failed to connect to {host}. no requests attempted")
+        unreachable("Client fails to connects to an etcd host", {"traffic_id":traffic_id, "host":host, "error":e})
+        print(f"Client [parallel_driver_generate_traffic] ({traffic_id}): failed to connect to {host}. no requests attempted")
 
 
 if __name__ == "__main__":

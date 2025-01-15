@@ -56,9 +56,9 @@ services:
       antithesis-net:
         ipv4_address: 10.0.0.20
 
-  workload:
-    image: 'workload:latest'
-    container_name: workload
+  client:
+    image: 'client:latest'
+    container_name: client
     networks:
       antithesis-net:
         ipv4_address: 10.0.0.131

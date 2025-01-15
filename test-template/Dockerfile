@@ -1,7 +1,11 @@
 FROM docker.io/ubuntu:latest 
 
 # Install python and other dependencies
-RUN apt-get update -y && apt-get install -y python3 pip wget python3-etcd3 python3-numpy python3-protobuf python3-filelock
+RUN apt-get update -y && apt-get install -y \
+    python3 pip wget python3-etcd3 python3-numpy python3-protobuf python3-filelock
+
+# Install java
+RUN apt-get install -y openjdk-17-jdk
 
 # Install Antithesis Python SDK
 RUN pip install antithesis cffi --break-system-packages
@@ -16,6 +20,8 @@ COPY ./entrypoint/entrypoint.py /entrypoint.py
 
 # Copy scripts & executables into required directory for Test Composer
 COPY ./main/parallel_driver_generate_traffic.py /opt/antithesis/test/v1/main/parallel_driver_generate_traffic.py
+
+COPY ./main/eventually_health_check.sh /opt/antithesis/test/v1/main/eventually_health_check.sh
 
 WORKDIR /opt/antithesis
 
@@ -32,3 +38,5 @@ COPY ./resources/local_file_helper.py /opt/antithesis/resources/local_file_helpe
 # Need empty files to track operations and ids
 COPY ./local-txt-files/operations.txt /opt/antithesis/local-txt-files/operations.txt
 COPY ./local-txt-files/client-traffic-ids.txt /opt/antithesis/local-txt-files/client-traffic-ids.txt
+
+COPY ./java-validation /opt/antithesis/java-validation
