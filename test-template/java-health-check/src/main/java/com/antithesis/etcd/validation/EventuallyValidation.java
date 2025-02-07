@@ -1,6 +1,5 @@
 package com.antithesis.etcd.validation;
 
-// TODO: import Java SDK
 import static com.antithesis.sdk.Assert.*;
 import io.etcd.jetcd.Client;
 import io.etcd.jetcd.KV;

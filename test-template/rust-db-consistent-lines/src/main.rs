@@ -16,21 +16,62 @@ async fn main() -> Result<(), Error> {
 
     let mut client = Client::connect(["http://etcd0:2379"], None).await?;
 
-    let options = GetOptions::default().with_all_keys();
+    // Delete all keys
+    println!("Deleting all keys...");
+    client.delete("", Some(DeleteOptions::new().with_all_keys())).await?;
+
+    // Sleep 1 second
+    let duration = Duration::new(1, 0);
+    thread::sleep(duration);
+
+    // Connect to a different etcd node
+    let mut client = Client::connect(["http://etcd1:2379"], None).await?;
 
     // Get all the keys that are in the etcd cluster
-    let response = client.get("", Some(options)).await?;
+    let response = client.get("", Some(GetOptions::new().with_all_keys())).await?;
 
     // Count the number of keys that we received
     let count = response.kvs().len();
 
     println!("Number of entries in etcd: {}", count);
 
-    // Always assertion that the key space is less than or equal to 6. We only use 6 keys in the generate_traffic script.
-    // Note: even though we have add 3 keys from the eventually_health_check script, an eventually command and a finally command
-    // will never be ran in the same timeline. That eliminates the key space from being 9 whenever we run this rust script.
+    // Always assertion that the number of key values in the database is 0.
     let details = json!({"key_space_size": count});
-    assert_always!(count <= 6, "Key space remains bounded", &details);
+    assert_always!(count == 0, "When all keys are deleted, there are 0 keys in the database", &details);
+
+    // Define 6 key values
+    let keys = vec![
+        ("k1", "v1"),
+        ("k2", "v2"),
+        ("k3", "v3"),
+        ("k4", "v4"),
+        ("k5", "v5"),
+        ("k6", "v6"),
+    ];
+
+    // Write 6 key values to the etcd database
+    for (key, value) in keys {
+        println!("Writing key: {} with value: {}", key, value);
+        client.put(key, value, None).await?;
+    }
+
+    // Sleep 1 second
+    let duration = Duration::new(1, 0);
+    thread::sleep(duration);
+
+    // Connect to a different etcd node
+    let mut client = Client::connect(["http://etcd2:2379"], None).await?;
+
+    // Get all keys to verify
+    println!("Verifying keys...");
+    let response = client.get("", Some(GetOptions::new().with_all_keys())).await?;
+    let count = response.kvs().len();
+    
+    println!("There are {} keys in the database.", count);
+
+    // Always assertion that the number of key values in the database is 6.
+    let details = json!({"key_count": count});
+    assert_always!(count == 6, "There should only be 6 kv pairs in the database", &details);
 
     Ok(())
 }
