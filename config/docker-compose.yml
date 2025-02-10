@@ -57,7 +57,7 @@ services:
         ipv4_address: 10.0.0.20
 
   client:
-    image: 'client:latest'
+    image: 'etcd-client:latest'
     container_name: client
     networks:
       antithesis-net:

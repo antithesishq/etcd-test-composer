@@ -96,7 +96,7 @@ This is a 3 step process, which is [described in greater detail here](https://an
 
 2. Build the client image. From within the `/test-template` directory, run the following command: 
 
-`docker build . -t client:latest`
+`docker build . -t etcd-client:latest`
 
 3. run `docker-compose up` from the root directory to start all containers defined in `docker-compose.yml`
 

@@ -1,0 +1,70 @@
+name: Trigger Antithesis exploration
+
+env:
+  REGISTRY: us-central1-docker.pkg.dev
+  REPOSITORY: molten-verve-216720/ethereum-repository
+
+on: 
+  push:
+    branches:
+      - main  # Trigger this action on push to the main branch
+  workflow_dispatch:
+    inputs:
+      test:
+        description: 'Test name'
+        required: false
+        default: 'etcd demo'
+        type: string
+      config_image:
+        description: 'Config image'
+        required: true
+        default: us-central1-docker.pkg.dev/molten-verve-216720/demo-repository/etcd-config:latest
+        type: string
+      images:
+        description: 'System images (separate with ;)'
+        required: true
+        default: us-central1-docker.pkg.dev/molten-verve-216720/demo-repository/etcd-client:latest;docker.io/bitnami/etcd:3.5
+        type: string
+      duration:
+        description: 'Duration (exploration hours)'
+        required: true
+        type: int
+        default: 0.5
+      description:
+        description: 'Test run description (avoid quotes, please!)'
+        required: true
+        type: string
+        default: "[user] please provide description"
+      email:
+        description: 'Additional email notification recipient (separate with ;)'
+        required: true
+        type: string
+        default: ""
+
+jobs:
+  antithesis:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - uses: actions/checkout@v4
+
+    # Run Antithesis Tests
+    - name: Run Antithesis Tests
+      uses: antithesishq/antithesis-trigger-action@main
+      with:
+        notebook_name: etcd
+        tenant: demo
+        username: ${{ secrets.ANTITHESIS_USERNAME }}
+        password: ${{ secrets.ANTITHESIS_PASSWORD }}
+        github_token: ${{ secrets.GH_PAT }}
+        config_image: ${{ inputs.config_image || 'us-central1-docker.pkg.dev/molten-verve-216720/demo-repository/etcd-config:latest' }}
+        images: ${{ inputs.images || 'us-central1-docker.pkg.dev/molten-verve-216720/demo-repository/etcd-client:latest;docker.io/bitnami/etcd:3.5' }}
+        description: ${{ inputs.description || 'automatic run' }}
+        email_recipients: ${{ inputs.email || ''}}
+        test_name: ${{ inputs.test || 'automatic run'}}
+        additional_parameters: |-
+          custom.duration = ${{ inputs.duration || 0.5 }}
