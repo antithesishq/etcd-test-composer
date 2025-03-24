@@ -42,7 +42,7 @@ RUN apt-get install -y python3
 RUN apt install -y python3-etcd3 python3-numpy python3-protobuf python3-filelock
 
 # Install Antithesis Python SDK
-RUN pip install antithesis cffi --break-system-packages
+RUN pip install antithesis cffi hypothesis --break-system-packages
 
 # Copying python entrypoint. It contains the lifecycle setup_complete message.
 COPY ./entrypoint/entrypoint.py /entrypoint.py
@@ -52,6 +52,9 @@ COPY ./python-generate-traffic/parallel_driver_generate_traffic.py /opt/antithes
 
 # Copying additional resources into a resources folder
 COPY ./python-generate-traffic/resources/helper.py /opt/antithesis/resources/helper.py
+
+# Copying additional resources into a resources folder
+COPY ./python-generate-traffic/parallel_driver_hypothesis.py /opt/antithesis/parallel_driver_hypothesis.py
 
 
 # GO:
