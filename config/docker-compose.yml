@@ -6,6 +6,7 @@ services:
     image: 'bitnami/etcd:3.5'
     container_name: etcd0
     hostname: etcd0
+    user: root
     environment: 
       ETCD_NAME: "etcd0"
       ETCD_INITIAL_ADVERTISE_PEER_URLS: "http://etcd0:2380"
@@ -24,6 +25,7 @@ services:
     image: 'bitnami/etcd:3.5'
     container_name: etcd1
     hostname: etcd1
+    user: root
     environment: 
       ETCD_NAME: "etcd1"
       ETCD_INITIAL_ADVERTISE_PEER_URLS: "http://etcd1:2380"
@@ -42,6 +44,7 @@ services:
     image: 'bitnami/etcd:3.5'
     container_name: etcd2
     hostname: etcd2
+    user: root
     environment: 
       ETCD_NAME: "etcd2"
       ETCD_INITIAL_ADVERTISE_PEER_URLS: "http://etcd2:2380"
