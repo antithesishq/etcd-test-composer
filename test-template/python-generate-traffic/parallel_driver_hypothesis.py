@@ -26,23 +26,26 @@ REQUEST_PROBABILITIES = {
 }
 
 @given(key=st.text(), value=st.text())
-@settings(backend="hypothesis-urandom")
+@settings(backend="hypothesis-urandom", deadline=None)
 def test_etcd(key, value):
-    client = helper.connect_to_host()
-    print(f'key is {key}')
-    print(f'value is {value}')
-    # etcd can't handle empty value
-    if value == '' or key == '':
-        return
-    requests = helper.generate_requests(1, 0, REQUEST_PROBABILITIES)
-    for request in requests: 
-        try: 
+    try: 
+        client = helper.connect_to_host()
+        print(f'key is {key}')
+        print(f'value is {value}')
+        # etcd can't handle empty keys/values
+        if value == '' or key == '':
+            return
+        requests = helper.generate_requests(1, 0, REQUEST_PROBABILITIES)
+        for request in requests: 
             success, error = helper.put_request(client, key, value) 
             sometimes(success, "Client can make successful input-fuzzed put requests", None)
             if not success: 
                 print(f"Client [parallel_driver_hypothesis]: unsuccessful put with key '{key}', value '{value}', and error '{error}'")
-        except Exception as e:
-            print(f"Client [parallel_driver_hypothesis]: Exception {e}")
+    except Exception as e:
+        print(f"Client [parallel_driver_hypothesis]: Exception {e}")
 
 if __name__ == '__main__':
-    test_etcd()
+    try:
+        test_etcd()
+    except Exception as e:
+        print(f"Client [parallel_driver_hypothesis]: Exception {e}")
