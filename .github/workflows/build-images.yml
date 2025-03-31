@@ -29,8 +29,8 @@ jobs:
     - name: Build and push config image
       uses: docker/build-push-action@v5
       with:
-        context: ./config
-        file: ./Dockerfile.config
+        context: ./
+        file: ./config/Dockerfile.config
         push: true
         tags: |
           ${{ env.REGISTRY }}/${{ env.REPOSITORY}}/etcd-config:latest,
@@ -39,8 +39,8 @@ jobs:
     - name: Build and push client image
       uses: docker/build-push-action@v5
       with:
-        context: ./test-template
-        file: ./Dockerfile.client
+        context: ./
+        file: ./test-template/Dockerfile.client
         push: true
         tags: |
           ${{ env.REGISTRY }}/${{ env.REPOSITORY}}/etcd-client:latest,
