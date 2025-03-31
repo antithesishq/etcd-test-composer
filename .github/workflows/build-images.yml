@@ -1,4 +1,4 @@
-name: Build and Push Config + Assertoor Image to Antithesis Registry
+name: Build and Push Config + Client Image to Antithesis Registry
 
 on:
   push:
@@ -29,7 +29,7 @@ jobs:
     - name: Build and push config image
       uses: docker/build-push-action@v5
       with:
-        context: ./
+        context: ./config
         file: ./Dockerfile.config
         push: true
         tags: |
