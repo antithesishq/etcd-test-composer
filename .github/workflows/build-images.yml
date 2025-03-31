@@ -29,7 +29,7 @@ jobs:
     - name: Build and push config image
       uses: docker/build-push-action@v5
       with:
-        context: ./
+        context: ./config
         file: ./config/Dockerfile.config
         push: true
         tags: |
@@ -39,7 +39,7 @@ jobs:
     - name: Build and push client image
       uses: docker/build-push-action@v5
       with:
-        context: ./
+        context: ./test-template
         file: ./test-template/Dockerfile.client
         push: true
         tags: |
