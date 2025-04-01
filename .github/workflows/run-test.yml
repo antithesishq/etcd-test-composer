@@ -18,12 +18,12 @@ on:
       config_image:
         description: 'Config image'
         required: true
-        default: ${{ env.REGISTRY }}/${{ env.REPOSITORY }}/etcd-config:latest
+        default: ${ REGISTRY }/${ REPOSITORY }/etcd-config:latest
         type: string
       images:
         description: 'System images (separate with ;)'
         required: true
-        default: ${{ env.REGISTRY }}/${{ env.REPOSITORY }}/etcd-client:latest;docker.io/bitnami/etcd:3.5
+        default: ${ REGISTRY }/${ REPOSITORY }/etcd-client:latest;docker.io/bitnami/etcd:3.5
         type: string
       duration:
         description: 'Duration (exploration hours)'
@@ -61,8 +61,8 @@ jobs:
         username: ${{ secrets.ANTITHESIS_USERNAME }}
         password: ${{ secrets.ANTITHESIS_PASSWORD }}
         github_token: ${{ secrets.GH_PAT }}
-        config_image: ${{ inputs.config_image || '${{ env.REGISTRY }}/${{ env.REPOSITORY }}/etcd-config:latest' }}
-        images: ${{ inputs.images || '${{ env.REGISTRY }}/${{ env.REPOSITORY }}/etcd-client:latest;docker.io/bitnami/etcd:3.5' }}
+        config_image: ${{ inputs.config_image || '${ REGISTRY }/${ REPOSITORY }/etcd-config:latest' }}
+        images: ${{ inputs.images || '${ REGISTRY }/${ REPOSITORY }/etcd-client:latest;docker.io/bitnami/etcd:3.5' }}
         description: ${{ inputs.description || 'automatic run' }}
         email_recipients: ${{ inputs.email || ''}}
         test_name: ${{ inputs.test || 'automatic run'}}
