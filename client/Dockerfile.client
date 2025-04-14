@@ -2,12 +2,12 @@ FROM docker.io/ubuntu:latest
 
 # Install dependencies
 RUN apt-get update -y && apt-get install -y pip
-RUN apt install -y python3-etcd3
 
-# PYTHON:
-
-# Install python and other dependencies
+# Install python
 RUN apt-get install -y python3
+
+# Install python etcd client
+RUN apt install -y python3-etcd3
 
 # Install Antithesis Python SDK
 RUN pip install antithesis cffi --break-system-packages
