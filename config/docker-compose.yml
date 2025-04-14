@@ -48,6 +48,6 @@ services:
       ALLOW_NONE_AUTHENTICATION: "yes"
 
   client:
-    image: 'etcd-client:latest'
+    image: 'etcd-client:v1'
     container_name: client
     entrypoint: ['/entrypoint.py']
