@@ -3,14 +3,20 @@ FROM docker.io/ubuntu:latest
 # Install dependencies
 RUN apt-get update -y && apt-get install -y pip
 
-# Install python
-RUN apt-get install -y python3
+# PYTHON:
 
-# Install python etcd client
-RUN apt install -y python3-etcd3
+# Install python and other dependencies
+RUN apt-get install -y python3
+RUN apt install -y python3-etcd3 python3-numpy python3-protobuf python3-filelock
 
 # Install Antithesis Python SDK
 RUN pip install antithesis cffi --break-system-packages
 
 # Copying python entrypoint. It contains the lifecycle setup_complete message.
 COPY ./entrypoint/entrypoint.py /entrypoint.py
+
+# Copying python executable into Test Composer directory
+COPY ./python-generate-traffic/parallel_driver_generate_traffic.py /opt/antithesis/test/v1/main/parallel_driver_generate_traffic.py
+
+# Copying additional resources into a resources folder
+COPY ./python-generate-traffic/resources/helper.py /opt/antithesis/resources/helper.py
