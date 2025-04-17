@@ -1,3 +1,5 @@
+#!/usr/bin/env -S python3 -u
+
 # Antithesis SDK
 from antithesis.assertions import (
     always,
