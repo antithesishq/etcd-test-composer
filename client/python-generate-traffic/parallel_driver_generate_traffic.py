@@ -31,6 +31,7 @@ def simulate_traffic(prefix):
 
         # Antithesis Assertion: sometimes put requests are successful. A failed request is OK since we expect them to happen.
         sometimes(success, "Client can make successful put requests", {"error":error})
+        sometimes(error, "Client put requests can fail", None)
 
         if success:
             kvs.append((key, value))
@@ -55,6 +56,7 @@ def validate_puts(kvs):
 
         # Antithesis Assertion: sometimes get requests are successful. A failed request is OK since we expect them to happen.
         sometimes(success, "Client can make successful get requests", {"error":error})
+        sometimes(error, "Client get requests can fail", None)
 
         if not success:
             print(f"Client: unsuccessful get with key '{key}', and error '{error}'")

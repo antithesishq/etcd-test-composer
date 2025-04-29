@@ -2,7 +2,7 @@
 
 # This file serves as the client's entrypoint. It signals "setupComplete" using the Antithesis SDK
 
-import etcd3, time
+import time
 
 from antithesis.lifecycle import (
     setup_complete,
