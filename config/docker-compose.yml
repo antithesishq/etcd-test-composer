@@ -16,6 +16,11 @@ services:
       ETCD_INITIAL_CLUSTER: "etcd0=http://etcd0:2380,etcd1=http://etcd1:2380,etcd2=http://etcd2:2380"
       ETCD_INITIAL_CLUSTER_STATE: "new"
       ALLOW_NONE_AUTHENTICATION: "yes"
+    healthcheck:
+      test: ["CMD", "etcdctl", "endpoint", "health"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
 
   etcd1:
     image: 'docker.io/bitnami/etcd:3.5'
@@ -31,6 +36,11 @@ services:
       ETCD_INITIAL_CLUSTER: "etcd0=http://etcd0:2380,etcd1=http://etcd1:2380,etcd2=http://etcd2:2380"
       ETCD_INITIAL_CLUSTER_STATE: "new"
       ALLOW_NONE_AUTHENTICATION: "yes"
+    healthcheck:
+      test: ["CMD", "etcdctl", "endpoint", "health"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
 
   etcd2:
     image: 'docker.io/bitnami/etcd:3.5'
@@ -46,8 +56,30 @@ services:
       ETCD_INITIAL_CLUSTER: "etcd0=http://etcd0:2380,etcd1=http://etcd1:2380,etcd2=http://etcd2:2380"
       ETCD_INITIAL_CLUSTER_STATE: "new"
       ALLOW_NONE_AUTHENTICATION: "yes"
+    healthcheck:
+      test: ["CMD", "etcdctl", "endpoint", "health"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
 
-  client:
-    image: 'etcd-client:v1'
-    container_name: client
+  health-checker:
+    image: 'etcd-tutorial-health-checker:docs-antithesis-more-random-v2'
+    container_name: health-checker
+    depends_on:
+      etcd0:
+        condition: service_healthy
+      etcd1:
+        condition: service_healthy
+      etcd2:
+        condition: service_healthy
     entrypoint: ['/entrypoint.py']
+
+  client1:
+    image: 'etcd-tutorial-client:docs-antithesis-more-random-v2'
+    container_name: client1
+    entrypoint: "sleep infinity"
+
+  client2:
+    image: 'etcd-tutorial-client:docs-antithesis-more-random'
+    container_name: client2
+    entrypoint: "sleep infinity"

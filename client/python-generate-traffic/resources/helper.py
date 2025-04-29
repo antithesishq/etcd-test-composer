@@ -33,7 +33,7 @@ def connect_to_host():
 
 def generate_random_string():
     random_str = []
-    for _ in range(8):
+    for _ in range(16):
         random_str.append(random_choice(list(string.ascii_letters + string.digits)))
     return "".join(random_str)
 

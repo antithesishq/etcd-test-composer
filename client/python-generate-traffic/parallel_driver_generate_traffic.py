@@ -10,7 +10,7 @@ import sys
 sys.path.append("/opt/antithesis/resources")
 import helper
 
-def simulate_traffic():
+def simulate_traffic(prefix):
     """
         This function will first connect to an etcd host, then execute a certain number of put requests. 
         The key and value for each put request are generated using Antithesis randomness (check within the helper.py file). 
@@ -23,7 +23,7 @@ def simulate_traffic():
     for _ in range(num_requests):
 
         # generating random str for the key and value
-        key = helper.generate_random_string()
+        key = prefix+helper.generate_random_string()
         value = helper.generate_random_string()
 
         # response of the put request
@@ -66,8 +66,9 @@ def validate_puts(kvs):
     return True, None
 
 if __name__ == "__main__":
-	kvs = simulate_traffic()
-	values_stay_consistent, mismatch = validate_puts(kvs)
+    prefix = helper.generate_random_string()
+    kvs = simulate_traffic(prefix)
+    values_stay_consistent, mismatch = validate_puts(kvs)
 
 	# We expect that the values we put in the database stay consistent
-	always(values_stay_consistent, "Database key values stay consistent", {"mismatch":mismatch})
+    always(values_stay_consistent, "Database key values stay consistent", {"mismatch":mismatch})
