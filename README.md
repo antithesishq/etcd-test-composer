@@ -2,13 +2,13 @@
 
 ## Purpose
 
-This repo demonstrates the use of the [Antithesis platform](https://antithesis.com/product/what_is_antithesis/) to test [etcd](https://etcd.io/). Follow the step by step tutorial [here](https://antithesis.com/docs/tutorials/)
+This repo demonstrates the use of the [Antithesis platform](https://antithesis.com/product/what_is_antithesis/) to test [etcd](https://etcd.io/). Follow the step-by-step tutorial [here](https://antithesis.com/docs/tutorials/)
 
 ## Setup
 
-There are 4 containers running in this system: 3 that make up an etcd cluster (`etcd0`, `etcd1`, `etcd2`) and one that `client`. 
+6 containers are running in this system: 3 that make up an etcd cluster (`etcd0`, `etcd1`, `etcd2`), one `health-checker`, and two `client`. 
 
-The `client` container runs the `entrypoint.py` script runs when it starts. This script confirms that all of the etcd hosts are available before [signaling the software is ready to test](https://antithesis.com/docs/tutorials/cluster-setup/#ready-signal). 
+The `health-checker` container runs the `entrypoint.py` script which [signals that the system is ready for testing](https://antithesis.com/docs/tutorials/cluster-setup/#ready-signal). 
 
 ## Test Composer 
 
@@ -27,7 +27,7 @@ In `client/Dockerfile.client`, you can see the test command get defined in the `
 
 ## SDK Usage
 
-This repository includes the use of Antithesis's Python SDK, to do the following: 
+This repository includes the use of Antithesis's Python SDK to do the following: 
 
 ### setupComplete
 
@@ -41,43 +41,49 @@ Antithesis SDKs allow users to [express the properties their software should hav
 
 #### Sometimes Assertions
 
-[Sometimes assertions](https://antithesis.com/docs/properties_assertions/properties/#sometimes-properties) check that intended funcitonality *happens at least once in the course of testing* - in this case, that operations happen against the etcd cluster and that validation occurs. For example, in `parallel_driver_generate_traffic.py`: 
+[Sometimes assertions](https://antithesis.com/docs/properties_assertions/properties/#sometimes-properties) check that intended functionality *happens at least once in the course of testing* - in this case, that operations happen against the etcd cluster and that validation occurs. For example, in `parallel_driver_generate_traffic.py`: 
 
 `sometimes(success, "Client can make successful put requests", {"error":error})`
 
 #### Always Assertions
 
-[Always assertions](https://antithesis.com/docs/properties_assertions/properties/#always-properties) check that something (like a guarantee) *always happens, on every execution history.* In this case, in `parallel_driver_generate_traffic.py` this line checks that the database key values stay consistent": 
+[Always assertions](https://antithesis.com/docs/properties_assertions/properties/#always-properties) check that something (like a guarantee) *always happens, on every execution history.* In this case, in `parallel_driver_generate_traffic.py` this line checks that the database key values stay consistent: 
 
 `always(values_stay_consistent, "Database key values stay consistent", {"mismatch":mismatch})`
 
 ### Randomness
 
-Randomness is key for autonomous testing, since we want the software to follow many, unpredictable execution paths. [The Antithesis SDK](https://antithesis.com/docs/using_antithesis/sdk/#randomness) provides an easy interface to get structured random values while also providing valuable guidance to the Antithesis platform, which increases the efficiency of testing.
+Randomness is key for autonomous testing, since we want the software to follow many unpredictable execution paths. [The Antithesis SDK](https://antithesis.com/docs/using_antithesis/sdk/#randomness) provides an easy interface to get structured random values while also providing valuable guidance to the Antithesis platform, which increases the efficiency of testing.
 
 ## Testing Locally
 
-Before running your application on the Antithesis platform, it can be convenient to check your work locally before you kick off a full Antithesis test run.
+Before running your application on the Antithesis platform, checking your work locally before you kick off a full Antithesis test run can be convenient.
 
-This is a 3 step process, which is [described in greater detail here](https://antithesis.com/docs/test_templates/testing_locally/): 
+This process is [described in greater detail here](https://antithesis.com/docs/test_templates/testing_locally/).
 
 1. Pull the bitnami/etcd:3.5 image using the following command: 
 
 `docker pull bitnami/etcd:3.5`
 
+2. Build the health-checker image. From within the `health-checker` directory, run the following command:
+
+`docker build . -f Dockerfile.health-checker -t etcd-health-checker:v1`
+
 2. Build the client image. From within the `/client` directory, run the following command: 
 
 `docker build . -f Dockerfile.client -t etcd-client:v1`
 
-3. run `docker-compose up` from the config directory to start all containers defined in `docker-compose.yml`
+3. Run `docker-compose up` from the config directory to start all containers defined in `docker-compose.yml`
 
-4. After the client container has signaled `setupComplete` (or printed `cluster is healthy`), you can run the parallel driver 1 to many times via `docker exec`: 
+4. After the health-checker container has signaled `setupComplete` (or printed `cluster is healthy`), you can run the parallel driver 1 to many times via `docker exec`: 
 
-`docker exec client /opt/antithesis/test/v1/main/parallel_driver_generate_traffic.py`
+`docker exec client1 /opt/antithesis/test/v1/main/parallel_driver_generate_traffic.py`
+
+`docker exec client2 /opt/antithesis/test/v1/main/parallel_driver_generate_traffic.py`
 
 6. Confirm that the parallel driver command works
 
-You've now validated that your test is ready to run on the Antithesis platform! (Note that SDK assertions won't be evaluated locally).
+You've now validated that your test is ready to run on the Antithesis platform! (Note that SDK assertions won't be evaluated locally.)
 
 <!-- ## Example Report
 
