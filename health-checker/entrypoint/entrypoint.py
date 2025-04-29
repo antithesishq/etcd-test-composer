@@ -1,8 +1,6 @@
 #!/usr/bin/env -S python3 -u
 
-# This file serves as the client's entrypoint. It: 
-# 1. Confirms that all nodes in the cluster are available
-# 2. Signals "setupComplete" using the Antithesis SDK
+# This file serves as the client's entrypoint. It signals "setupComplete" using the Antithesis SDK
 
 import time
 
