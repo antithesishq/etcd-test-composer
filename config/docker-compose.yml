@@ -63,7 +63,7 @@ services:
       retries: 3
 
   health-checker:
-    image: 'etcd-tutorial-health-checker:docs-antithesis-more-random-v2'
+    image: 'etcd-tutorial-health-checker:tutorial'
     container_name: health-checker
     depends_on:
       etcd0:
