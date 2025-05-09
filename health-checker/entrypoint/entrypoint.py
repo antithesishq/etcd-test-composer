@@ -11,6 +11,3 @@ from antithesis.lifecycle import (
 print("Client [entrypoint]: cluster is healthy!")
 # Here is the python format for setup_complete. At this point, our system is fully initialized and ready to test.
 setup_complete({"Message":"ETCD cluster is healthy"})
-
-# sleep infinity
-time.sleep(31536000)
