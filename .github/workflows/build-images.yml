@@ -3,12 +3,14 @@ name: Build and Push Config + Assertoor Image to Antithesis Registry
 on:
   push:
     branches:
-      - main  # Trigger this action on push to the main branch
+      - gh-action-docker-compose-up  # Trigger this action on push to the main branch
   workflow_dispatch:  # Allows manual trigger
   
 env:
   REGISTRY: us-central1-docker.pkg.dev
   REPOSITORY: molten-verve-216720/demo-repository
+  DOCKER_COMPOSE_PATH: "config/docker-compose.yml"  # path to docker compose in repository
+  SLEEP_DURATION: 10                                # Duration to sleep before setup complete
 
 jobs:
   build-and-push:
@@ -45,3 +47,25 @@ jobs:
         tags: |
           ${{ env.REGISTRY }}/${{ env.REPOSITORY}}/etcd-client:latest,
           ${{ env.REGISTRY }}/${{ env.REPOSITORY}}/etcd-client:${{ github.sha }}
+
+    - name: Install Docker Compose
+      run: |
+          sudo curl -L "https://github.com/docker/compose/releases/download/v2.3.3/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+          docker-compose --version
+      continue-on-error: false
+
+    - name: Checkout Repository for access
+      uses: actions/checkout@v4
+      continue-on-error: false
+
+    - name: Start application-specific services using Docker Compose
+      run: docker-compose -f $DOCKER_COMPOSE_PATH up -d
+      continue-on-error: false
+
+    - name: Sleep past setup_complete
+      run: |
+          echo "Sleeping for $SLEEP_DURATION seconds"
+          sleep $SLEEP_DURATION
+          echo "Finished sleeping"
+      continue-on-error: false
