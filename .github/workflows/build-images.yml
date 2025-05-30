@@ -1,4 +1,4 @@
-name: Build and Push Config + Assertoor Image to Antithesis Registry
+name: Build Config + Workload Image; Validate SUT runs locally; push to Antithesis; kick off tests
 
 on:
   push:
@@ -32,7 +32,7 @@ jobs:
       uses: docker/build-push-action@v5
       with:
         context: ./config
-        file: ./Dockerfile.config
+        file: ./config/Dockerfile.config
         push: true
         tags: |
           ${{ env.REGISTRY }}/${{ env.REPOSITORY}}/etcd-config:latest,
@@ -42,7 +42,7 @@ jobs:
       uses: docker/build-push-action@v5
       with:
         context: ./test-template
-        file: ./Dockerfile.client
+        file: ./test-template/Dockerfile.client
         push: true
         tags: |
           ${{ env.REGISTRY }}/${{ env.REPOSITORY}}/etcd-client:latest,
@@ -53,10 +53,6 @@ jobs:
           sudo curl -L "https://github.com/docker/compose/releases/download/v2.3.3/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
           sudo chmod +x /usr/local/bin/docker-compose
           docker-compose --version
-      continue-on-error: false
-
-    - name: Checkout Repository for access
-      uses: actions/checkout@v4
       continue-on-error: false
 
     - name: Start application-specific services using Docker Compose
