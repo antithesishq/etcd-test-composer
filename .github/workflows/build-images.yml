@@ -31,8 +31,8 @@ jobs:
     - name: Build and push config image
       uses: docker/build-push-action@v5
       with:
-        context: /config
-        file: Dockerfile.config
+        context: ./config
+        file: ./Dockerfile.config
         push: true
         tags: |
           ${{ env.REGISTRY }}/${{ env.REPOSITORY}}/etcd-config:latest,
