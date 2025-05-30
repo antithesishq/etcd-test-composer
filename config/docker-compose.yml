@@ -63,7 +63,7 @@ services:
     image: 'us-central1-docker.pkg.dev/molten-verve-216720/demo-repository/etcd-client:latest'
     container_name: client
     environment: 
-      ANTITHESIS_SDK_LOCAL_OUTPUT: "test-template"
+      ANTITHESIS_SDK_LOCAL_OUTPUT: "/opt/antithesis/sdk-output"
     networks:
       antithesis-net:
         ipv4_address: 10.0.0.131

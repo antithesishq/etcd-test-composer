@@ -59,10 +59,18 @@ jobs:
       run: docker-compose -f $DOCKER_COMPOSE_PATH up -d
       continue-on-error: false
 
-    - name: Sleep past setup_complete
+    - name: Sleep until setup_complete
       run: |
-          echo "Sleeping for $SLEEP_DURATION seconds"
-          sleep $SLEEP_DURATION
-          echo "Finished sleeping"
-          ls test-template
+          i=0
+          while [ $i -lt 10 ];
+          do
+            if grep -q "antithesis_setup" $ANTITHESIS_SDK_LOCAL_OUTPUT; then
+                  echo "Setup_complete found"
+                  break
+            fi
+            echo "Setup_complete not yet found"
+            sleep 10
+            i=$((i + 1))
+
+          done
       continue-on-error: false
