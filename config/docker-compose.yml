@@ -3,10 +3,10 @@ version: '3.8'
 services:
 
   etcd0:
-    image: 'bitnami/etcd:3.5'
+    image: 'docker.io/bitnami/etcd:3.5'
     container_name: etcd0
     hostname: etcd0
-    user: root
+    # user: root
     environment: 
       ETCD_NAME: "etcd0"
       ETCD_INITIAL_ADVERTISE_PEER_URLS: "http://etcd0:2380"
@@ -22,10 +22,10 @@ services:
         ipv4_address: 10.0.0.10
 
   etcd1:
-    image: 'bitnami/etcd:3.5'
+    image: 'docker.io/bitnami/etcd:3.5'
     container_name: etcd1
     hostname: etcd1
-    user: root
+    # user: root
     environment: 
       ETCD_NAME: "etcd1"
       ETCD_INITIAL_ADVERTISE_PEER_URLS: "http://etcd1:2380"
@@ -41,10 +41,10 @@ services:
         ipv4_address: 10.0.0.15
 
   etcd2:
-    image: 'bitnami/etcd:3.5'
+    image: 'docker.io/bitnami/etcd:3.5'
     container_name: etcd2
     hostname: etcd2
-    user: root
+    # user: root
     environment: 
       ETCD_NAME: "etcd2"
       ETCD_INITIAL_ADVERTISE_PEER_URLS: "http://etcd2:2380"
@@ -60,8 +60,9 @@ services:
         ipv4_address: 10.0.0.20
 
   client:
-    image: 'etcd-client:latest'
+    image: 'us-central1-docker.pkg.dev/molten-verve-216720/demo-repository/etcd-client:latest'
     container_name: client
+    # TODO: add env var for output (to capture setup_complete)
     networks:
       antithesis-net:
         ipv4_address: 10.0.0.131
