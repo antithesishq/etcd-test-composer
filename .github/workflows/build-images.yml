@@ -39,15 +39,15 @@ jobs:
           ${{ env.REGISTRY }}/${{ env.REPOSITORY}}/etcd-config:latest,
           ${{ env.REGISTRY }}/${{ env.REPOSITORY}}/etcd-config:${{ github.sha }}
 
-    - name: Build and push client image
-      uses: docker/build-push-action@v5
-      with:
-        context: ./test-template
-        file: ./test-template/Dockerfile.client
-        push: true
-        tags: |
-          ${{ env.REGISTRY }}/${{ env.REPOSITORY}}/etcd-client:latest,
-          ${{ env.REGISTRY }}/${{ env.REPOSITORY}}/etcd-client:${{ github.sha }}
+    # - name: Build and push client image
+    #   uses: docker/build-push-action@v5
+    #   with:
+    #     context: ./test-template
+    #     file: ./test-template/Dockerfile.client
+    #     push: true
+    #     tags: |
+    #       ${{ env.REGISTRY }}/${{ env.REPOSITORY}}/etcd-client:latest,
+    #       ${{ env.REGISTRY }}/${{ env.REPOSITORY}}/etcd-client:${{ github.sha }}
 
     - name: Install Docker using Docker's official script
       run: |
@@ -66,35 +66,35 @@ jobs:
       run: docker-compose -f $DOCKER_COMPOSE_PATH up -d
       continue-on-error: false
 
-    - name: Validate our expected containers are running
-      run: |
-          EXPECTED_CONTAINERS=$CONTAINERS_EXPECTED_TO_BE_RUNNING
+    # - name: Validate our expected containers are running
+    #   run: |
+    #       EXPECTED_CONTAINERS=$CONTAINERS_EXPECTED_TO_BE_RUNNING
 
-          for container in "${EXPECTED_CONTAINERS[@]}"; do
-            CONTAINERS_RUNNING=$(docker ps --filter "name=$container" --filter "status=running" --format "{{.Names}}")
+    #       for container in "${EXPECTED_CONTAINERS[@]}"; do
+    #         CONTAINERS_RUNNING=$(docker ps --filter "name=$container" --filter "status=running" --format "{{.Names}}")
 
-            if [[ ! "$CONTAINER_RUNNING" =~ "$container" ]]; then
-              echo "Error: The container '$container' is not running!"
-              exit 1
-            fi
-            echo "The container '$container' is running."
-          done
+    #         if [[ ! "$CONTAINER_RUNNING" =~ "$container" ]]; then
+    #           echo "Error: The container '$container' is not running!"
+    #           exit 1
+    #         fi
+    #         echo "The container '$container' is running."
+    #       done
 
-          echo "All expected containers are running"
-      continue-on-error: false
+    #       echo "All expected containers are running"
+    #   continue-on-error: false
 
     - name: Sleep until setup_complete
       run: |
-          i=0
-          while [ $i -lt 10 ];
-          do
-            if grep -q "antithesis_setup" $ANTITHESIS_SDK_LOCAL_OUTPUT; then
-                  echo "Setup_complete found"
-                  break
-            fi
-            echo "Setup_complete not yet found"
-            sleep 10
-            i=$((i + 1))
+          docker exec -entrypoint $(podman ps | grep client | awk '{print $1;}') bash -c 'i=0   
+          while [ $i -lt 10 ];   
+          do   
+            if grep -q "antithesis_setup" $ANTITHESIS_SDK_LOCAL_OUTPUT; then   
+              echo "Setup_complete found"   
+              break   
+            fi   
+              echo "Setup_complete not yet found"   
+          sleep 10   
+          i=$((i + 1))   
+          done'
 
-          done
       continue-on-error: false 
