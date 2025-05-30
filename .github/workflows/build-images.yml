@@ -10,15 +10,12 @@ env:
   REGISTRY: us-central1-docker.pkg.dev
   REPOSITORY: molten-verve-216720/demo-repository
   DOCKER_COMPOSE_PATH: "config/docker-compose.yml"  # path to docker compose in repository
-  SLEEP_DURATION: 60                                # Duration to sleep before setup complete
-  CONTAINERS_EXPECTED_TO_BE_RUNNING: "etcd0 etcd1 etcd2 client"   # containers we expect to be running by setup_complete
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
 
     steps:
-    # Step 1: Checkout the code
     - name: Checkout the code
       uses: actions/checkout@v3
 
@@ -39,15 +36,15 @@ jobs:
           ${{ env.REGISTRY }}/${{ env.REPOSITORY}}/etcd-config:latest,
           ${{ env.REGISTRY }}/${{ env.REPOSITORY}}/etcd-config:${{ github.sha }}
 
-    # - name: Build and push client image
-    #   uses: docker/build-push-action@v5
-    #   with:
-    #     context: ./test-template
-    #     file: ./test-template/Dockerfile.client
-    #     push: true
-    #     tags: |
-    #       ${{ env.REGISTRY }}/${{ env.REPOSITORY}}/etcd-client:latest,
-    #       ${{ env.REGISTRY }}/${{ env.REPOSITORY}}/etcd-client:${{ github.sha }}
+    - name: Build and push client image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./test-template
+        file: ./test-template/Dockerfile.client
+        push: true
+        tags: |
+          ${{ env.REGISTRY }}/${{ env.REPOSITORY}}/etcd-client:latest,
+          ${{ env.REGISTRY }}/${{ env.REPOSITORY}}/etcd-client:${{ github.sha }}
 
     - name: Install Docker using Docker's official script
       run: |
@@ -66,23 +63,6 @@ jobs:
       run: docker-compose -f $DOCKER_COMPOSE_PATH up -d
       continue-on-error: false
 
-    # - name: Validate our expected containers are running
-    #   run: |
-    #       EXPECTED_CONTAINERS=$CONTAINERS_EXPECTED_TO_BE_RUNNING
-
-    #       for container in "${EXPECTED_CONTAINERS[@]}"; do
-    #         CONTAINERS_RUNNING=$(docker ps --filter "name=$container" --filter "status=running" --format "{{.Names}}")
-
-    #         if [[ ! "$CONTAINER_RUNNING" =~ "$container" ]]; then
-    #           echo "Error: The container '$container' is not running!"
-    #           exit 1
-    #         fi
-    #         echo "The container '$container' is running."
-    #       done
-
-    #       echo "All expected containers are running"
-    #   continue-on-error: false
-
     - name: Sleep until setup_complete
       run: |
           docker exec -entrypoint $(docker ps | grep client | awk '{print $1;}') bash -c 'i=0   
@@ -96,5 +76,8 @@ jobs:
           sleep 10   
           i=$((i + 1))   
           done'
-
       continue-on-error: false 
+
+      # TODO: next steps: 
+      # find test composer drivers and run them; confirm exit code 0
+      # input parameter for setup_complete + tc drivers
