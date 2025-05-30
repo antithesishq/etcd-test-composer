@@ -10,7 +10,7 @@ env:
   REGISTRY: us-central1-docker.pkg.dev
   REPOSITORY: molten-verve-216720/demo-repository
   DOCKER_COMPOSE_PATH: "config/docker-compose.yml"  # path to docker compose in repository
-  SLEEP_DURATION: 10                                # Duration to sleep before setup complete
+  SLEEP_DURATION: 60                                # Duration to sleep before setup complete
 
 jobs:
   build-and-push:
@@ -64,4 +64,5 @@ jobs:
           echo "Sleeping for $SLEEP_DURATION seconds"
           sleep $SLEEP_DURATION
           echo "Finished sleeping"
+          ls test-template
       continue-on-error: false

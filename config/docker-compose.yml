@@ -60,9 +60,10 @@ services:
         ipv4_address: 10.0.0.20
 
   client:
-    image: 'us-central1-docker.pkg.dev/molten-verve-216720/demo-repository/etcd-client:latest'
+    image: 'us-central1-docker.pkg.dev/molten-verve-216720/demo-repositoryetcd-client:latest'
     container_name: client
-    # TODO: add env var for output (to capture setup_complete)
+    environment: 
+      ANTITHESIS_SDK_LOCAL_OUTPUT: "test-template"
     networks:
       antithesis-net:
         ipv4_address: 10.0.0.131
