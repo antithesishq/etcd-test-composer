@@ -4,7 +4,13 @@ on:
   push:
     branches:
       - gh-action-docker-compose-up  # Trigger this action on push to the main branch
-  workflow_dispatch:  # Allows manual trigger
+  workflow_dispatch:
+    inputs:
+      client_container:
+        description: 'Container that emits "setup_complete" and has Test Composer drivers/commands'
+        required: true
+        default: 'client'
+        type: string
   
 env:
   REGISTRY: us-central1-docker.pkg.dev
@@ -65,7 +71,7 @@ jobs:
 
     - name: Sleep until setup_complete
       run: |
-          docker exec -entrypoint $(docker ps | grep client | awk '{print $1;}') bash -c 'i=0   
+          docker exec -entrypoint $(docker ps | grep ${{ inputs.client_container }} | awk '{print $1;}') bash -c 'i=0   
           while [ $i -lt 10 ];   
           do   
             if grep -q "antithesis_setup" $ANTITHESIS_SDK_LOCAL_OUTPUT; then   
@@ -78,6 +84,17 @@ jobs:
           done'
       continue-on-error: false 
 
-      # TODO: next steps: 
-      # find test composer drivers and run them; confirm exit code 0
-      # input parameter for setup_complete + tc drivers
+    - name: Confirm Test Composer driver/commands run properly
+      run: |
+          docker exec -entrypoint $(docker ps | grep ${{ inputs.client_container }} | awk '{print $1;}') bash -c '
+          set -e
+          ORDER=(first_ singleton_ serial_ parallel_ anytime_ eventually_ finally_)
+          TOP_DIR="/opt/antithesis/test/v1/"
+          for prefix in "${ORDER[@]}"; do
+            mapfile -d "" files < <(find "$TOP_DIR" -type f -executable -name "${prefix}*" -print0)
+            for file in "${files[@]}"; do
+              "$file" > /dev/null
+            done
+          done'
+      continue-on-error: false 
+
