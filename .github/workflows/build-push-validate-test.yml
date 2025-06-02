@@ -8,7 +8,7 @@ on:
     inputs:
       client_container:
         description: 'Container that emits "setup_complete" and has Test Composer drivers/commands'
-        required: true
+        required: false
         default: 'client'
         type: string
       test:
@@ -101,7 +101,7 @@ jobs:
 
     - name: Sleep until setup_complete
       run: |
-          docker exec -entrypoint $(docker ps | grep ${{ inputs.client_container }} | awk '{print $1;}') bash -c 'i=0   
+          docker exec -entrypoint $(docker ps | grep ${{ inputs.client_container || 'client' }} | awk '{print $1;}') bash -c 'i=0   
           while [ $i -lt 10 ];   
           do   
             if grep -q "antithesis_setup" $ANTITHESIS_SDK_LOCAL_OUTPUT; then   
@@ -116,7 +116,7 @@ jobs:
 
     - name: Confirm Test Composer driver/commands run properly
       run: |
-          docker exec -entrypoint $(docker ps | grep ${{ inputs.client_container }} | awk '{print $1;}') bash -c '
+          docker exec -entrypoint $(docker ps | grep ${{ inputs.client_container || 'client' }} | awk '{print $1;}') bash -c '
           set -e
           ORDER=(first_ singleton_ serial_ parallel_ anytime_ eventually_ finally_)
           TOP_DIR="/opt/antithesis/test/v1/"
