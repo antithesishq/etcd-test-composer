@@ -37,5 +37,5 @@ def generate_random_string():
         random_str.append(random_choice(list(string.ascii_letters + string.digits)))
     return "".join(random_str)
 
-def generate_requests():
+def generate_num_requests():
     return (get_random() % 100) + 1
