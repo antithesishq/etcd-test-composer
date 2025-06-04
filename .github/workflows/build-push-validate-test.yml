@@ -104,7 +104,7 @@ jobs:
           docker exec -entrypoint $(docker ps | grep ${{ inputs.client_container || 'client' }} | awk '{print $1;}') bash -c 'i=0   
           while [ $i -lt 10 ];   
           do   
-            if grep -q "antithesis_setup" $ANTITHESIS_SDK_LOCAL_OUTPUT; then   
+            if grep -q "antithesis_setup_FAKE" $ANTITHESIS_SDK_LOCAL_OUTPUT; then   
               echo "Setup_complete found"   
               break   
               exit 0
