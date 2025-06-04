@@ -107,11 +107,13 @@ jobs:
             if grep -q "antithesis_setup" $ANTITHESIS_SDK_LOCAL_OUTPUT; then   
               echo "Setup_complete found"   
               break   
+              exit 0
             fi   
               echo "Setup_complete not yet found"   
           sleep 10   
           i=$((i + 1))   
-          done'
+          done
+          exit 1'
       continue-on-error: false 
 
     - name: Confirm Test Composer driver/commands run properly
