@@ -1,0 +1,15 @@
+FROM python:3-slim
+
+# Install curl (used by the health checker script)
+RUN apt-get update && \
+    apt-get install -y curl && \
+    apt-get clean
+
+# Install Antithesis Python SDK
+RUN pip install antithesis cffi --break-system-packages
+
+# Copy the health checker script
+COPY ./health_checker.py /health_checker.py
+RUN chmod +x /health_checker.py
+
+ENTRYPOINT ["/health_checker.py"]
