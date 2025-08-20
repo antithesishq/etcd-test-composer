@@ -1,0 +1,59 @@
+replicaCount: 3  # We'll be running 3 etcd nodes: etcd0, etcd1, etcd2
+
+image:
+  repository: bitnami/etcd
+  tag: 3.5
+  pullPolicy: IfNotPresent
+
+auth:
+  rbac:
+    create: false
+  client:
+    secureTransport: false  # Use plain HTTP for client connections
+    useAutoTLS: false
+    enableAuthentication: false  # Allows users to connect to an etcd node without a password
+  peer:
+    secureTransport: false  # Use plain HTTP for peer connections
+    useAutoTLS: false
+  token:
+    enabled: false # Disable JWT-based auth and prevent secret generation
+
+# Set environment variables for initial cluster bootstrapping
+environment:
+  - name: ETCD_INITIAL_CLUSTER_TOKEN
+    value: "etcd-cluster-1"  # Unique cluster token
+  - name: ETCD_INITIAL_CLUSTER_STATE
+    value: "new"  # Start fresh cluster
+  - name: ALLOW_NONE_AUTHENTICATION
+    value: "yes"  # Allow no-auth clients
+
+service:
+  enabled: true
+  ports:
+    client: 2379  # Client port
+    peer: 2380    # Peer port
+
+containerPorts:
+  client: 2379
+  peer: 2380
+
+statefulset:
+  podManagementPolicy: "Parallel"  # Allow all pods to start in parallel
+  updateStrategy:
+    type: RollingUpdate
+
+# Ensures pods have predictable names like etcd-0, etcd-1, etcd-2
+fullnameOverride: "etcd"
+
+# We don't need persistence
+persistence:
+  enabled: false
+
+# We don't need the pre-upgrade job for our tests
+preUpgradeJob:
+  enabled: false
+
+# NOTE:
+# It's best practice to use the same name for the container and hostname when testing with Antithesis.
+# ETCD_NAME identifies the member within the cluster and is set automatically based on the pod name.
+# ETCD_INITIAL_ADVERTISE_PEER_URLS is inferred from the pod's DNS name.
