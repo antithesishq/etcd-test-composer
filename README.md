@@ -90,7 +90,7 @@ This is a 3 step process, which is [described in greater detail here](https://an
 
 1. Pull the bitnami/etcd:3.5 image using the following command: 
 
-`docker pull bitnami/etcd:3.5`
+`docker pull bitnamilegacy/etcd:3.5`
 
 2. Build the client image. From within the `/test-template` directory, run the following command: 
 

@@ -3,7 +3,7 @@ version: '3.8'
 services:
 
   etcd0:
-    image: 'docker.io/bitnami/etcd:3.5'
+    image: 'docker.io/bitnamilegacy/etcd:3.5'
     container_name: etcd0
     hostname: etcd0
     environment: 
@@ -18,7 +18,7 @@ services:
       ALLOW_NONE_AUTHENTICATION: "yes"
 
   etcd1:
-    image: 'docker.io/bitnami/etcd:3.5'
+    image: 'docker.io/bitnamilegacy/etcd:3.5'
     container_name: etcd1
     hostname: etcd1
     environment: 
@@ -33,7 +33,7 @@ services:
       ALLOW_NONE_AUTHENTICATION: "yes"
 
   etcd2:
-    image: 'docker.io/bitnami/etcd:3.5'
+    image: 'docker.io/bitnamilegacy/etcd:3.5'
     container_name: etcd2
     hostname: etcd2
     environment: 
@@ -51,3 +51,5 @@ services:
     image: 'etcd-client:latest'
     container_name: client
     entrypoint: ['/entrypoint.py']
+    environment:
+      ANTITHESIS_SDK_LOCAL_OUTPUT: "assertions_parallel_driver_generate_traffic.json"

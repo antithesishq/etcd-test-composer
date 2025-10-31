@@ -1,5 +1,4 @@
-import random, etcd3, string
-import numpy as np
+import etcd3, string
 
 # Antithesis SDK
 from antithesis.random import (
@@ -13,20 +12,28 @@ from antithesis.assertions import (
 )
 
 
-def put_request(c, key, value):
+def put_request(c, key, value, **kwargs):
     try:
-        c.put(key, value)
+        c.put(key, value, **kwargs)
         return True, None
     except Exception as e:
-        return False, e
+        return False, str(e)
 
+
+# adjusted `get_request` to differentiate between connection failure and key not being available 
 def get_request(c, key):
     try:
         response = c.get(key)
+
+        # if the key is unavailable, then this returns None
+        # Previously, this would result in an AttributeError, as None cannot be decoded
+        if response[0] is None:
+            return True, None, None
+        
         database_value = response[0].decode('utf-8')
         return True, None, database_value
     except Exception as e:
-        return False, e, None
+        return False, str(e), None
 
 def generate_requests():
     return (get_random() % 100) + 1

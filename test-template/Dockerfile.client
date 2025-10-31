@@ -49,6 +49,7 @@ COPY ./entrypoint/entrypoint.py /entrypoint.py
 
 # Copying python executable into Test Composer directory
 COPY ./python-generate-traffic/parallel_driver_generate_traffic.py /opt/antithesis/test/v1/main/parallel_driver_generate_traffic.py
+COPY ./python-generate-traffic/parallel_driver_generate_leased_traffic.py /opt/antithesis/test/v1/main/parallel_driver_generate_leased_traffic.py
 
 # Copying additional resources into a resources folder
 COPY ./python-generate-traffic/resources/helper.py /opt/antithesis/resources/helper.py
