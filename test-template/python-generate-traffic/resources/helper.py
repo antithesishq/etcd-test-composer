@@ -12,10 +12,9 @@ from antithesis.assertions import (
     unreachable,
 )
 
-
-def put_request(c, key, value):
+def put_request(c, key, value, lease=None):
     try:
-        c.put(key, value)
+        c.put(key, value, lease=lease)
         return True, None
     except Exception as e:
         return False, e
@@ -23,6 +22,8 @@ def put_request(c, key, value):
 def get_request(c, key):
     try:
         response = c.get(key)
+        if response[0] is None:
+            return True, None, None
         database_value = response[0].decode('utf-8')
         return True, None, database_value
     except Exception as e:
@@ -48,3 +49,17 @@ def connect_to_host():
         unreachable("Client failed to connect to an etcd host", {"host":host, "error":e})
         print(f"Client: failed to connect to {host}. exiting")
         sys.exit(1)
+
+def generate_lease(c, duration):
+    try:
+        lease = c.lease(duration)
+        return True, None, lease
+    except Exception as e:
+        return False, str(e), None
+
+def revoke_lease(c, lease):
+    try:
+        c.revoke_lease(lease.id)
+        return True, None
+    except Exception as e:
+        return False, str(e)
