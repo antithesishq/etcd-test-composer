@@ -56,9 +56,10 @@ COPY ./python-generate-traffic/resources/helper.py /opt/antithesis/resources/hel
 
 # GO:
 
-# Install go
-RUN wget https://golang.org/dl/go1.22.5.linux-amd64.tar.gz
-RUN tar -C /usr/local -xzf go1.22.5.linux-amd64.tar.gz
+# Install go (universal)
+ARG TARGETARCH
+RUN wget https://golang.org/dl/go1.22.5.linux-${TARGETARCH}.tar.gz && \
+    tar -C /usr/local -xzf go1.22.5.linux-${TARGETARCH}.tar.gz
 ENV PATH=$PATH:/usr/local/go/bin 
 
 # Copying go script and building an executable into Test Composer directory
