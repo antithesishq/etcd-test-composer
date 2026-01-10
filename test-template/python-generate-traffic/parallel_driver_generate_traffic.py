@@ -14,6 +14,7 @@ import sys
 sys.path.append("/opt/antithesis/resources")
 import helper
 
+FRACTION_TO_UPDATE = 2
 
 def simulate_traffic():
     """
@@ -45,7 +46,38 @@ def simulate_traffic():
 
     print(f"Client: traffic simulated!")
     return kvs
-    
+
+def simulate_update_traffic(kvs):
+    """
+        This function will first connect to an etcd host, then execute a put request for approximately half the keys in the key/value array.
+        The key and value for each put request are generated using Antithesis randomness (check within the helper.py file).
+        We return the updated list of key/value pairs. For any failed put requests, we return the key/value pairs that were not updated.
+    """
+    client = helper.connect_to_host()
+    new_kvs = []
+
+    for kv in kvs:
+        if helper.get_random() % FRACTION_TO_UPDATE == 0:
+
+            key, value = kv[0], kv[1]
+            # generating a new random str for the value
+            new_value = helper.generate_random_string()
+
+            # response of the put request
+            success, error = helper.put_request(client, key, new_value)
+
+            # Antithesis Assertion: sometimes put requests are successful. A failed request is OK since we expect them to happen.
+            sometimes(success, "Client can make successful put requests for existing keys", {"error":error})
+            
+            if success:
+                new_kvs.append((key, new_value))
+                print(f"Client: successful put with key '{key}' and new value '{new_value}'")
+            else:
+                new_kvs.append((key, value))
+                print(f"Client: unsuccessful put with key '{key}', new value '{new_value}', and error '{error}'")
+        else:
+            new_kvs.append(kv)
+    return new_kvs
 
 def validate_puts(kvs):
     """
@@ -72,9 +104,15 @@ def validate_puts(kvs):
     return True, None
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":    
     kvs = simulate_traffic()
     values_stay_consistent, mismatch = validate_puts(kvs)
 
     # Antithesis Assertion: for all successful kv put requests, values from get requests should match for their respective keys 
     always(values_stay_consistent, "Database key values stay consistent", {"mismatch":mismatch})
+
+    updated_kvs = simulate_update_traffic(kvs)
+    values_stay_consistent, mismatch = validate_puts(updated_kvs)
+    
+    # Antithesis Assertion: for all successful kv put requests, updated values from get requests should match for their respective keys 
+    always(values_stay_consistent, "Updated database key values stay consistent", {"mismatch":mismatch})
